@@ -1,0 +1,37 @@
+flowchart LR
+  CA(["Commuter arrival<br/>Poisson, λ = 40 /h"])
+  PA(["Provincial arrival<br/>at D − L, L ~ TN(75, 50) on [0, 180]"])
+
+  subgraph S1["Station 1 — Check-in"]
+    direction TB
+    Q1B[["Business queue · FIFO"]] --> C1B["Business counter × 1"]
+    Q1C[["Coach queue · FIFO"]] --> C1C["Coach counters × 3"]
+  end
+
+  subgraph S2["Station 2 — Security"]
+    direction TB
+    Q2B[["Business queue · FIFO"]] --> C2B["Business lane × 1"]
+    Q2C[["Coach queue · FIFO"]] --> C2C["Coach lanes × 2"]
+  end
+
+  subgraph S3["Station 3 — Gate"]
+    direction TB
+    R{"Commuter, or<br/>provincial: done by D?"}
+    G[["Commuter gate pool<br/>FIFO by gate arrival"]]
+    PG["Gate area of<br/>own provincial flight"]
+  end
+
+  CA --> Q1C
+  CA -. "flag: B = 0 skips check-in (off)" .-> Q2C
+  PA -- business --> Q1B
+  PA -- coach --> Q1C
+  C1B --> Q2B
+  C1C --> Q2C
+  C2B --> R
+  C2C --> R
+  R -- commuter --> G
+  G -- "first ≤ 40 board" --> CF(["Commuter flight<br/>hourly at :30, 40 seats"])
+  G -- "rest left behind" --> G
+  R -- "provincial, t ≤ D" --> PG
+  PG -- "board at D" --> PF(["Provincial flight<br/>every 6 h"])
+  R -- "provincial, t > D" --> M(["Missed: leaves airport<br/>refund if L ≥ 90 min"])

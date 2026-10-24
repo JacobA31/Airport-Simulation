@@ -1,0 +1,35 @@
+%%{init: {"flowchart": {"defaultRenderer": "elk", "padding": 14}}}%%
+flowchart LR
+  CFG[/"config/*.yaml"/]
+  RUNNER["runner.py · analysis.py<br/>(Person B)"]
+  SCRIPTS["scripts/run_once.py<br/>scripts/trace.py"]
+  TESTS["tests/"]
+
+  subgraph PKG["airport_sim package"]
+    direction LR
+    CONFIG["config.py<br/>load · override · validate"]
+    MODEL["model.py<br/>AirportModel · run_replication"]
+    EVENTS["events.py<br/>EventType · PRIORITY · EventList"]
+    ENT["entities.py<br/>Passenger · ProvincialFlight"]
+    STATIONS["stations.py<br/>Station"]
+    STATS["stats.py<br/>TimeWeighted · Tally"]
+    FIN["finance.py<br/>summarize"]
+    RNG["rng.py<br/>RandomStreams<br/>(placeholder → B)"]
+    VAR["variates.py<br/>Variates<br/>(placeholder → B)"]
+  end
+
+  CFG --> CONFIG
+  RUNNER --> CONFIG
+  RUNNER --> MODEL
+  SCRIPTS --> CONFIG
+  SCRIPTS --> MODEL
+  TESTS --> MODEL
+  MODEL --> EVENTS
+  MODEL --> ENT
+  MODEL --> STATIONS
+  MODEL --> STATS
+  MODEL --> FIN
+  STATIONS --> STATS
+  MODEL -- "six methods (D15)" --> VAR
+  VAR -- "get(name)" --> RNG
+  MODEL -. "KPI dict per replication" .-> RUNNER

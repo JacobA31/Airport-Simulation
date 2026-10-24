@@ -1,0 +1,64 @@
+# SFMA airport passenger-processing DES: baseline configuration.
+# Units: time in minutes and money in CAD, unless the key name says otherwise.
+# (Dn) refers to an entry in DECISIONS.md.
+
+simulation:
+  horizon_days: 7              # T = 7 x 1440 = 10 080 min, empty start, no warm-up (spec 6.1)
+  base_seed: 4005              # replication r draws from streams derived from (base_seed, r)
+
+operations:                    # controllable decision variables and scenario flags
+  checkin_counters:
+    business: 1
+    coach: 3
+  max_checkin_counters: 6      # counter space available (spec 2.4)
+  security_lanes:
+    business: 1
+    coach: 2
+  checkin_cross_use: none      # none | business_to_coach | both (D7, D20)
+  security_cross_use: none     # none | business_to_coach | both (D7, D20)
+  missed_pax_policy: continue  # continue | leave_at_departure (D6, D21)
+  commuter_zero_bag_skips_checkin: false   # (D5)
+
+flights:
+  commuter:
+    first_departure_min: 30    # 00:30 on day 1
+    interval_min: 60
+    seats: 40
+    fare: 200
+    operating_cost: 1500       # charged for every scheduled departure, even if empty (D13)
+  provincial:
+    first_departure_min: 360   # 06:00 on day 1; the t = 0 departure is excluded (D12)
+    interval_min: 360
+    fare:
+      business: 1000
+      coach: 500
+    operating_cost: 12000
+    refund_min_lead_min: 90    # refund if missed and arrived >= 90 min before departure
+
+finance:
+  checkin_wage_per_hour: 35    # every check-in counter staffed for the whole horizon (D12)
+  staffing_ratio_limit: 0.05   # staffing cost / net ticket revenue (D13)
+
+inputs:                        # stochastic input models (Person B, report section 5)
+  commuter_arrival_rate_per_hour: 40
+  provincial_demand:           # booked = Binomial(seats, occupancy_prob) per flight (D10, D22)
+    seats:
+      business: 40
+      coach: 140
+    occupancy_prob:
+      business: 0.75
+      coach: 0.85
+  provincial_lead_time:        # minutes before departure, truncated normal (D11)
+    mean_min: 75
+    variance_min2: 50
+    lower_min: 0
+    upper_min: 180
+  bags_pmf:                    # [P(B=0), P(B=1), P(B=2)]
+    commuter: [0.70, 0.25, 0.05]
+    provincial: [0.30, 0.50, 0.20]
+  checkin:                     # total = boarding pass + bag processing + other delay (A6)
+    boarding_pass_mean_min: 2
+    per_bag_mean_min: 1
+    other_delay_mean_min: 3
+    other_delay_prob: 1.0      # D4: applies to every passenger
+  security_mean_min: 3

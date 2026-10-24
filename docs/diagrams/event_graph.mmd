@@ -1,0 +1,26 @@
+%%{init: {"flowchart": {"defaultRenderer": "elk", "padding": 22}}}%%
+flowchart TD
+  INIT(("Init<br/>t = 0"))
+  CA(("Commuter<br/>arrival<br/>p3"))
+  PA(("Provincial<br/>arrival<br/>p3"))
+  CE(("Check-in<br/>end<br/>p2"))
+  SE(("Security<br/>end<br/>p1"))
+  CD(("Commuter<br/>departure<br/>p4"))
+  PD(("Provincial<br/>departure<br/>p4"))
+  EN(("End of run<br/>t = T<br/>p5"))
+
+  INIT -- "a" --> CA
+  INIT -- "D − L" --> PA
+  INIT -- "30" --> CD
+  INIT -- "360" --> PD
+  INIT -- "T" --> EN
+
+  CA -- "a (c1)" --> CA
+  CA -- "S1 (c2)" --> CE
+  CA -. "S2 (c3)" .-> SE
+  PA -- "S1 (c2)" --> CE
+  CE -- "S1 (c4)" --> CE
+  CE -- "S2 (c5)" --> SE
+  SE -- "S2 (c6)" --> SE
+  CD -- "60 (c7)" --> CD
+  PD -- "360 (c8)" --> PD
