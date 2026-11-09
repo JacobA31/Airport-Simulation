@@ -1,0 +1,4 @@
+config_file: config/baseline.yaml
+overrides:
+  inputs.commuter_arrival_rate_per_hour: 30
+replications: 30

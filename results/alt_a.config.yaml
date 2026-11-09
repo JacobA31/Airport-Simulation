@@ -1,0 +1,4 @@
+config_file: config/baseline.yaml
+overrides:
+  operations.checkin_counters.coach: 4
+replications: 30

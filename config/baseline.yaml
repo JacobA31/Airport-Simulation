@@ -5,6 +5,7 @@
 simulation:
   horizon_days: 7              # T = 7 x 1440 = 10 080 min, empty start, no warm-up (spec 6.1)
   base_seed: 4005              # replication r draws from streams derived from (base_seed, r)
+  replications: 30             # N per experiment (spec 6.2); 30 is a placeholder until the pilot picks it
 
 operations:                    # controllable decision variables and scenario flags
   checkin_counters:

@@ -1,0 +1,67 @@
+experiment:
+  name: baseline
+  base_seed: 12345
+  replications: 30
+  horizon_days: 7
+inputs:
+  commuter_arrival_rate_per_hour: 30
+  provincial_demand:
+    seats:
+      business: 40
+      coach: 140
+    occupancy_prob:
+      business: 0.75
+      coach: 0.85
+  provincial_lead_time:
+    mean_min: 75
+    variance_min2: 50
+    lower_min: 0
+    upper_min: 180
+  bags_pmf:
+    commuter:
+    - 0.7
+    - 0.25
+    - 0.05
+    provincial:
+    - 0.3
+    - 0.5
+    - 0.2
+  checkin:
+    boarding_pass_mean_min: 2
+    per_bag_mean_min: 1
+    other_delay_prob: 1.0
+    other_delay_mean_min: 3
+  security_mean_min: 3
+resources:
+  checkin_counters:
+    business: 1
+    coach: 3
+  security_screeners:
+    business: 1
+    coach: 2
+flights:
+  commuter:
+    first_departure_min: 30
+    interval_min: 60
+    seats: 40
+  provincial:
+    first_departure_min: 360
+    interval_min: 360
+  refund_threshold_min: 90
+financial:
+  ticket_price:
+    provincial_business: 1000
+    provincial_coach: 500
+    commuter: 200
+  flight_cost:
+    provincial: 12000
+    commuter: 1500
+  checkin_agent_wage_per_hour: 35
+  staffing_cost_limit_fraction: 0.05
+analysis:
+  confidence_level: 0.95
+  principal_kpis:
+  - mean_security_wait_min
+  - pct_provincial_missed
+  - security_utilization
+  - total_profit
