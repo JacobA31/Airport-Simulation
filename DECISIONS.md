@@ -9,6 +9,7 @@ alternative interpretation is selectable in the config file without code changes
 |----|------|------------|
 | D1–D15 | 2026-10-22 | Person A |
 | D16–D22 | 2026-10-22 | Person A (conceptual-model review) |
+| D23–D25 | 2026-11-20 | Person A (Phase IV set-up) |
 
 ---
 
@@ -148,3 +149,79 @@ Observations come from single smoke runs with the placeholder variates; they are
 2. **D13 — finance barely reacts to missed flights.** Booked provincial seats earn revenue whether or not the passenger flies, and only passengers who arrived at least 90 min early are refunded (about 1.5% of provincial passengers). Profit therefore stays around $2.6M per week even with 90% misses, and the 5% staffing limit is slack (about 0.7%). The trade-off discussion (§12) should say this explicitly.
 3. **Commuter gate is critically loaded.** 40 commuters/h meet 40 seats/h. Once upstream capacity is added, gate waits and left-behind counts grow (one run with 1+5 counters and 3+6 lanes: 66 min mean gate wait, 3 232 commuters left behind). This is relevant to the Phase IV choice of decision area.
 4. **Non-stationary baseline.** Baseline queues grow all week, so mean waits and queue lengths depend on the 7-day horizon. Confidence intervals across replications remain valid because the horizon is fixed, but the interpretation should mention this.
+
+## Exploration for the Phase IV decision area (2026-11-20)
+
+Means of 5–10 replications with the final `rng.py`/`variates.py`. These are
+exploratory runs to choose the decision area, not reported results.
+Reproduce with `run_once.py`/`runner.py` and the overrides shown.
+
+**Offered load (work arriving per hour ÷ capacity) at baseline inputs:**
+
+| Resource | D4 delay for everyone (p = 1) | D4 delay never (p = 0) |
+|---|---|---|
+| Coach check-in, 3 counters | 1.84 (5.5 counters needed; commuters alone 1.19) | 0.84 |
+| Coach check-in, 5 counters (the maximum with 1 business) | 1.10 | 0.51 |
+| Coach security, 2 lanes | 1.50 (3.0 lanes needed) | 1.50 |
+| Business check-in / security | 0.49 / 0.25 | 0.24 / 0.25 |
+| Commuter gate, 40 seats/h | 1.00 | 1.00 |
+
+**What changes `prov_pct_missed` (baseline 90.3%):**
+
+| D4 p | Coach counters / coach lanes | Missed % | Coach check-in wait | Coach security wait | Gate wait | Commuters left behind |
+|---|---|---|---|---|---|---|
+| 1 | 3 / 2 (baseline) | 90.3 | 2 276 | 4 | 30 | 16 |
+| 1 | 5 / 2 | 89.7 | 527 | 1 296 | 36 | 447 |
+| 1 | 5 / 4 | 88.4 | 527 | 0.6 | 68 | 3 380 |
+| 1 | 5 / 3, `leave_at_departure` | 52.4 | 31 | 3.7 | 108 | 5 392 |
+| 0.2 | 5 / 4 | 22.3 | 18 | 7.7 | 128 | 5 891 |
+| 0 | 3 / 2 | 83.3 | 39 | 1 664 | 36 | 430 |
+| 0 | 3 / 4 | 32.6 | 39 | 2.7 | 132 | 5 798 |
+| 0 | 5 / 6 | 5.6 | 12 | 1.1 | 103 | 5 363 |
+
+Observations:
+
+1. **Under D4 p = 1, no check-in or security policy fixes misses.** Coach
+   check-in stays overloaded even at the 6-counter maximum, so misses stay
+   about 88–90%. Only `leave_at_departure` (D6), which removes missed
+   passengers from the queues, brings misses down, to about 52%.
+2. **Coach security is the second bottleneck (load 1.5).** It is hidden at
+   baseline because check-in lets passengers through slowly. Adding check-in
+   counters alone moves the queue to security (security wait rises from 4 to
+   1 296 min).
+3. **The commuter gate is the third bottleneck.** Once check-in and security
+   keep up, gate waits reach 100–130 min and about 5 400–5 900 commuters per
+   week are left behind at least once.
+4. **Provincial surge.** About 149 provincial passengers arrive within about
+   30 minutes, 60–90 minutes before departure, and coach passengers share one
+   FIFO queue with commuters. Even with ample capacity, a few percent miss.
+5. **The principal KPIs (Person B) use coach *security*.** At baseline the
+   coach security wait is 4 min while the coach check-in wait is 2 276 min,
+   so KPIs 1 and 3 miss the baseline bottleneck. Raise with B once the
+   decision area is chosen.
+6. **Security lanes cost nothing in the financial model (D12).** Any
+   security-lane alternative wins on profit by construction. Mention this, or
+   add a security wage as a config flag.
+
+---
+
+## Phase IV set-up (2026-11-20)
+
+### D23 — Primary decision area: coach security lanes
+- **Options:** (A) number/allocation of security lanes; (B) number/allocation of check-in counters; (C) check-in counters and security lanes together.
+- **Chosen:** A. The exact alternatives (for example 1B+3C, 1B+4C, and 1B+3C with server sharing) are fixed once D4 is settled.
+- **Rationale:** Coach security has offered load 1.5 at baseline under every D4 reading, so it is a structural bottleneck (see the 2026-11-20 exploration above). Check-in is the bottleneck only under the literal D4 reading, and changing both stations at once would leave the study without one primary decision area (spec §8.2).
+- **Status:** No alternatives are built or run until the TA answers D4.
+
+### D24 — Alternatives are overlay config files
+- **Options:** (A) overlay files with `extends:` that list only the changed keys; (B) full copies of `baseline.yaml`; (C) no files, `--set` overrides in a script.
+- **Chosen:** A. Files go in `config/alternatives/`. `config.load_config` follows the `extends:` chain and rejects keys the base file does not have, and the result is validated like any config. `runner.py` is unchanged (`--config config/alternatives/<name>.yaml`), and its `.config.yaml` record names the overlay file.
+- **Rationale:** Each alternative shows exactly what differs from the baseline, and a change to the baseline reaches every alternative without hand-syncing copies.
+
+### D25 — Optional security wage **[config flag]**
+- **Options:** (A) security lanes are free, as in the spec; (B) add a wage per security lane.
+- **Chosen:** A for the baseline: `finance.security_wage_per_hour: 0`. The flag exists because D23 varies security lanes, and with a zero wage any lane alternative wins on profit by construction.
+- **Rule when > 0:** Every lane is staffed for the whole horizon (as in D12). The cost is output as `security_staffing_cost` and subtracted from `profit`. It is **not** part of `staffing_ratio`, because the spec's 5% limit is defined for check-in staffing.
+
+### D4 status
+- Waiting for the TA's answer (2026-11-20). Phase IV alternatives are on hold until then.

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 
+from airport_sim.checks import conservation_violations
 from airport_sim.config import CABINS, load_config
 from airport_sim.entities import BOARDED, LEFT
 from airport_sim.model import AirportModel
@@ -38,12 +39,8 @@ def check_state(m: AirportModel, line: str, i: int) -> None:
 def check_conservation(res: dict, m: AirportModel) -> None:
     """Every passenger is boarded, has left, or is still in the system; outcomes add up."""
     in_system = [p for p in m.passengers if p.status not in (BOARDED, LEFT)]
-    assert res["comm_arrived"] == res["comm_boarded"] + res["comm_in_system_end"]
-    assert res["prov_booked"] == res["prov_arrived"] == res["prov_caught"] + res["prov_missed"]
-    assert res["prov_missed"] == res["prov_missed_left"] + res["prov_in_system_end"]
-    assert res["pax_in_system_end"] == len(in_system) == sum(
-        res[k] for k in ("end_checkin_waiting", "end_checkin_in_service", "end_security_waiting",
-                         "end_security_in_service", "end_gate_commuters"))
+    assert conservation_violations(res, all_use_checkin=not m.skip_zero_bag) == []
+    assert res["pax_in_system_end"] == len(in_system)          # counters agree with passenger records
     assert all(p.status != LEFT for p in m.passengers if p.ptype == "commuter")
 
 
