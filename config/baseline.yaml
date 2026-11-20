@@ -38,6 +38,7 @@ flights:
 
 finance:
   checkin_wage_per_hour: 35    # every check-in counter staffed for the whole horizon (D12)
+  security_wage_per_hour: 0    # per security lane, whole horizon; 0 = not costed, as in the spec (D25)
   staffing_ratio_limit: 0.05   # staffing cost / net ticket revenue (D13)
 
 inputs:                        # stochastic input models (Person B, report section 5)

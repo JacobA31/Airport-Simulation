@@ -22,7 +22,8 @@ at t = 0 (Monday 00:00), with no warm-up (D12). Operations run 24/7.
 Out of scope: parking and kerbside, walking time between stations, the boarding
 process itself, baggage handling after check-in, aircraft turnaround, crew,
 weather, flight delays or cancellations, rebooking of missed passengers, and
-costs other than flight operating cost and check-in wages.
+costs other than flight operating cost and check-in wages (security lanes can be
+costed with `finance.security_wage_per_hour`, 0 at baseline, D25).
 
 ## 4.2 Entities and attributes
 
@@ -216,7 +217,7 @@ The DES diagrams (process-flow view and event graph) are in
 **Fixed parameters**:
 - `simulation:`: horizon, base seed
 - `flights:`: provincial schedule, fares, operating costs, refund threshold of 90 min
-- `finance:`: wage of $35/h, staffing-ratio limit of 0.05
+- `finance:`: check-in wage of $35/h, security wage of $0/h (D25), staffing-ratio limit of 0.05
 - `operations:`: the scenario flags `missed_pax_policy` and `commuter_zero_bag_skips_checkin`
 
 ## 4.8 Performance measures
@@ -245,7 +246,7 @@ replication number). Waits are in minutes, utilisation is a fraction in
 | `comm_left_behind` | distinct commuters left behind by at least one full flight |
 | `comm_left_behind_events` | total left-behind incidents (one commuter can count more than once) |
 | `revenue_gross`, `refunds`, `revenue_net` | ticket revenue before refunds, refunds (equal to `refund_value`), and revenue after refunds (D13) |
-| `op_cost`, `staffing_cost`, `profit` | flight operating cost, check-in wages over the horizon, and `revenue_net − op_cost − staffing_cost` |
+| `op_cost`, `staffing_cost`, `security_staffing_cost`, `profit` | flight operating cost, check-in wages over the horizon, security wages over the horizon (0 at baseline, D25), and `revenue_net − op_cost − staffing_cost − security_staffing_cost` |
 | `staffing_ratio`, `staffing_ok` | `staffing_cost / revenue_net`; `staffing_ok` = (ratio ≤ `finance.staffing_ratio_limit`) |
 
 **Diagnostic columns** (for conservation checks, the finance check and verification):

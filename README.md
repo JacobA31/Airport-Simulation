@@ -4,9 +4,10 @@ Discrete-event simulation of passenger processing at Smiths Falls / Montague
 Airport (SYSC 4005, Fall 2026 course project).
 
 > Status: the simulation core, input models (`rng.py`, `variates.py`), replication
-> runner, and statistical analysis are in place. Verification evidence, the pilot
-> and final experiments, and the exact numbers used in the report are added as
-> Phases III and IV are completed (see "Reproducing the reported experiments").
+> runner, statistical analysis, and Person A's verification evidence
+> (`docs/verification.md`) are in place. The final replication count, the
+> alternatives, and the exact numbers used in the report are added as Phases III
+> and IV are completed (see "Reproducing the reported experiments").
 
 ## Setup
 
@@ -34,8 +35,23 @@ Windows, or activate the environment and use plain `python`.
 .venv/bin/python scripts/run_once.py                    # one baseline replication, prints all KPIs
 .venv/bin/python scripts/run_once.py --rep 3 --set operations.checkin_counters.coach=5
 .venv/bin/python scripts/trace.py --start 340 --until 365 --max-lines 50   # event trace around 06:00
-.venv/bin/pytest -q                                      # tests: random streams, variates, model
+.venv/bin/pytest -q                                      # tests: random streams, variates, model, verification
 ```
+
+## Verification (report §7)
+
+```bash
+.venv/bin/pytest -q                                      # every automated check
+.venv/bin/python scripts/check_conservation.py results/*.csv   # conservation identities on saved runs
+
+# Event traces with per-passenger timelines (saved in docs/verification/)
+.venv/bin/python scripts/trace.py --until 31 --max-lines 60 --pax-table 12 --no-results
+.venv/bin/python scripts/trace.py --start 270 --until 412 --max-lines 100 --pax-table 10 \
+    --pax-type provincial --no-results \
+    --set simulation.horizon_days=1 inputs.provincial_demand.seats.business=2 inputs.provincial_demand.seats.coach=8
+```
+
+What each check shows is described in `docs/verification.md`.
 
 Replication runner and analysis (run from the project root):
 
@@ -48,7 +64,19 @@ Replication runner and analysis (run from the project root):
 ```
 
 Any configuration value can be overridden on the command line without editing
-code, for example `--set operations.checkin_counters.coach=4`. The default
+code, for example `--set operations.checkin_counters.coach=4`. A policy
+alternative is stored as a short overlay file that names its base and lists only
+what changes, and is run with `--config`:
+
+```yaml
+# config/alternatives/<name>.yaml
+extends: ../baseline.yaml
+operations:
+  security_lanes:
+    coach: 3
+```
+
+Unknown keys in an overlay are rejected, like unknown `--set` keys. The default
 replication count is `simulation.replications`; `--reps` overrides it.
 
 From Python (this is what the replication runner calls):
@@ -130,12 +158,14 @@ Each run writes `<name>.csv` (one row per replication, with the seed record) and
 | `airport_sim/variates.py` | random-variate generators for all stochastic inputs |
 | `airport_sim/runner.py` | runs N replications and saves the replication-level CSV |
 | `airport_sim/analysis.py` | means, t-based 95% CIs, half-widths, replication-count planning, paired differences |
-| `scripts/` | single-run and event-trace scripts |
-| `tests/` | pytest suite (random streams, variates against theoretical means, model) |
+| `airport_sim/checks.py` | passenger-conservation identities on one replication's output |
+| `scripts/` | single-run, event-trace, and conservation-check scripts |
+| `tests/` | pytest suite (random streams, variates against theoretical means, model, verification) |
 | `results/` | replication-level CSVs, summaries, and the config record for each run |
-| `docs/project_definition/` | report §1–3: objectives, scope, KPIs, assumptions log |
+| `docs/objectives.md`, `docs/scope.md`, `docs/principal_kpis.md`, `docs/assumptions_log.md` | report §1–3: objectives, scope, KPIs, assumptions log |
 | `docs/conceptual_model.md` | report §4: conceptual model |
-| `docs/input_modeling.md` | report §5: input models and variate generation |
+| `docs/input_modelling.md` | report §5: input models and variate generation |
 | `docs/des_diagram.md` | event graph and process-flow diagrams |
 | `docs/software_architecture.md` | report §6: modules and design |
+| `docs/verification.md`, `docs/verification/` | report §7: verification evidence and saved event traces |
 | `DECISIONS.md` | log of modelling decisions (D1–D22) |

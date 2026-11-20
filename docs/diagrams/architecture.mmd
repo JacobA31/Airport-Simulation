@@ -1,12 +1,14 @@
 %%{init: {"flowchart": {"defaultRenderer": "elk", "padding": 14}}}%%
 flowchart LR
   CFG[/"config/*.yaml"/]
-  RUNNER["runner.py · analysis.py<br/>(Person B)"]
-  SCRIPTS["scripts/run_once.py<br/>scripts/trace.py"]
+  OUT[/"results/*.csv<br/>+ *.config.yaml"/]
+  SCRIPTS["scripts/run_once.py · trace.py<br/>check_conservation.py"]
   TESTS["tests/"]
 
   subgraph PKG["airport_sim package"]
     direction LR
+    RUNNER["runner.py<br/>run_experiment · write_csv"]
+    ANALYSIS["analysis.py<br/>t-based 95% CIs · replications_needed"]
     CONFIG["config.py<br/>load · override · validate"]
     MODEL["model.py<br/>AirportModel · run_replication"]
     EVENTS["events.py<br/>EventType · PRIORITY · EventList"]
@@ -14,16 +16,22 @@ flowchart LR
     STATIONS["stations.py<br/>Station"]
     STATS["stats.py<br/>TimeWeighted · Tally"]
     FIN["finance.py<br/>summarize"]
-    RNG["rng.py<br/>RandomStreams<br/>(placeholder → B)"]
-    VAR["variates.py<br/>Variates<br/>(placeholder → B)"]
+    CHECKS["checks.py<br/>conservation identities"]
+    RNG["rng.py<br/>RandomStreams"]
+    VAR["variates.py<br/>Variates"]
   end
 
   CFG --> CONFIG
   RUNNER --> CONFIG
   RUNNER --> MODEL
+  RUNNER --> OUT
+  OUT --> ANALYSIS
+  OUT --> SCRIPTS
   SCRIPTS --> CONFIG
   SCRIPTS --> MODEL
+  SCRIPTS --> CHECKS
   TESTS --> MODEL
+  TESTS --> CHECKS
   MODEL --> EVENTS
   MODEL --> ENT
   MODEL --> STATIONS

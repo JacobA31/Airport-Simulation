@@ -1,0 +1,46 @@
+# python scripts/trace.py --start 270 --until 412 --max-lines 100 --pax-table 10 --pax-type provincial --no-results \
+#     --set simulation.horizon_days=1 inputs.provincial_demand.seats.business=2 inputs.provincial_demand.seats.coach=8
+# Baseline config (commuters at 40/h) with only 2 business / 8 coach provincial seats per flight and a 1-day horizon,
+# replication 0. Only provincial passengers' events are shown; queue counts include the commuters.
+
+d1 04:35:39.2  t=  275.653  PROVINCIAL_ARRIVAL   pax 191 coach flight 1 lead=84.3 bags=0 -> checkin_queue | CI q 0/36 busy 0/1 3/3 | SC q 0/12 busy 0/1 2/2 | gate 4
+d1 04:39:16.0  t=  279.267  PROVINCIAL_ARRIVAL   pax 193 coach flight 1 lead=80.7 bags=1 -> checkin_queue | CI q 0/37 busy 0/1 3/3 | SC q 0/12 busy 0/1 2/2 | gate 5
+d1 04:43:32.7  t=  283.545  PROVINCIAL_ARRIVAL   pax 197 coach flight 1 lead=76.5 bags=1 -> checkin_queue | CI q 0/39 busy 0/1 3/3 | SC q 0/13 busy 0/1 2/2 | gate 6
+d1 04:44:33.5  t=  284.558  PROVINCIAL_ARRIVAL   pax 198 coach flight 1 lead=75.4 bags=1 -> checkin_queue | CI q 0/40 busy 0/1 3/3 | SC q 0/12 busy 0/1 2/2 | gate 7
+d1 04:46:30.8  t=  286.513  PROVINCIAL_ARRIVAL   pax 201 coach flight 1 lead=73.5 bags=0 -> checkin_queue | CI q 0/42 busy 0/1 3/3 | SC q 0/10 busy 0/1 2/2 | gate 10
+d1 04:48:03.8  t=  288.064  PROVINCIAL_ARRIVAL   pax 204 coach flight 1 lead=71.9 bags=0 -> checkin_queue | CI q 0/44 busy 0/1 3/3 | SC q 0/10 busy 0/1 2/2 | gate 11
+d1 04:48:52.9  t=  288.881  PROVINCIAL_ARRIVAL   pax 205 business flight 1 lead=71.1 bags=1 -> checkin_service | CI q 0/44 busy 1/1 3/3 | SC q 0/9 busy 0/1 2/2 | gate 12
+d1 04:51:25.3  t=  291.422  PROVINCIAL_ARRIVAL   pax 208 coach flight 1 lead=68.6 bags=1 -> checkin_queue | CI q 0/45 busy 1/1 3/3 | SC q 0/11 busy 0/1 2/2 | gate 12
+d1 04:52:22.9  t=  292.382  CHECKIN_END          pax 205 done (business counter) -> security_service | CI q 0/45 busy 0/1 3/3 | SC q 0/8 busy 1/1 2/2 | gate 15
+d1 04:57:20.9  t=  297.348  SECURITY_END         pax 205 done (business lane) -> gate             | CI q 0/46 busy 0/1 3/3 | SC q 0/7 busy 0/1 2/2 | gate 18
+d1 04:58:17.7  t=  298.295  PROVINCIAL_ARRIVAL   pax 215 coach flight 1 lead=61.7 bags=0 -> checkin_queue | CI q 0/50 busy 0/1 3/3 | SC q 0/6 busy 0/1 2/2 | gate 19
+d1 05:56:17.2  t=  356.286  CHECKIN_END          pax 191 done (coach counter) -> security_service; next pax 195 | CI q 0/47 busy 0/1 3/3 | SC q 0/0 busy 0/1 1/2 | gate 20
+d1 06:00:00.0  t=  360.000  PROVINCIAL_DEPARTURE flight 1: booked 9, caught 1, missed 8, refunds 0 | CI q 0/49 busy 0/1 3/3 | SC q 0/0 busy 0/1 1/2 | gate 20
+d1 06:00:13.0  t=  360.217  SECURITY_END         pax 191 done (coach lane) -> left                | CI q 0/49 busy 0/1 3/3 | SC q 0/0 busy 0/1 0/2 | gate 20
+d1 06:06:18.0  t=  366.300  CHECKIN_END          pax 193 done (coach counter) -> security_service; next pax 197 | CI q 0/54 busy 0/1 3/3 | SC q 0/0 busy 0/1 2/2 | gate 20
+d1 06:08:44.4  t=  368.741  SECURITY_END         pax 193 done (coach lane) -> left                | CI q 0/55 busy 0/1 3/3 | SC q 0/0 busy 0/1 1/2 | gate 21
+d1 06:09:22.1  t=  369.368  CHECKIN_END          pax 197 done (coach counter) -> security_service; next pax 199 | CI q 0/54 busy 0/1 3/3 | SC q 0/0 busy 0/1 1/2 | gate 22
+d1 06:11:23.0  t=  371.384  CHECKIN_END          pax 198 done (coach counter) -> security_queue; next pax 202 | CI q 0/54 busy 0/1 3/3 | SC q 0/2 busy 0/1 2/2 | gate 22
+d1 06:11:29.9  t=  371.498  SECURITY_END         pax 197 done (coach lane) -> left; next pax 199  | CI q 0/54 busy 0/1 3/3 | SC q 0/1 busy 0/1 2/2 | gate 22
+d1 06:13:56.7  t=  373.944  CHECKIN_END          pax 201 done (coach counter) -> security_queue; next pax 203 | CI q 0/54 busy 0/1 3/3 | SC q 0/1 busy 0/1 2/2 | gate 23
+d1 06:17:19.5  t=  377.325  CHECKIN_END          pax 204 done (coach counter) -> security_queue; next pax 206 | CI q 0/54 busy 0/1 3/3 | SC q 0/2 busy 0/1 2/2 | gate 24
+d1 06:18:18.7  t=  378.312  SECURITY_END         pax 201 done (coach lane) -> left; next pax 203  | CI q 0/56 busy 0/1 3/3 | SC q 0/1 busy 0/1 2/2 | gate 24
+d1 06:18:34.1  t=  378.569  SECURITY_END         pax 198 done (coach lane) -> left                | CI q 0/56 busy 0/1 3/3 | SC q 0/0 busy 0/1 1/2 | gate 25
+d1 06:25:11.0  t=  385.184  SECURITY_END         pax 204 done (coach lane) -> left; next pax 206  | CI q 0/60 busy 0/1 3/3 | SC q 0/0 busy 0/1 2/2 | gate 25
+d1 06:32:40.1  t=  392.669  CHECKIN_END          pax 208 done (coach counter) -> security_queue; next pax 213 | CI q 0/58 busy 0/1 3/3 | SC q 0/5 busy 0/1 2/2 | gate 0
+d1 06:39:18.7  t=  399.311  SECURITY_END         pax 208 done (coach lane) -> left; next pax 213  | CI q 0/56 busy 0/1 3/3 | SC q 0/2 busy 0/1 2/2 | gate 5
+d1 06:46:35.7  t=  406.595  CHECKIN_END          pax 215 done (coach counter) -> security_queue; next pax 221 | CI q 0/59 busy 0/1 3/3 | SC q 0/4 busy 0/1 2/2 | gate 8
+d1 06:51:39.9  t=  411.664  SECURITY_END         pax 215 done (coach lane) -> left; next pax 220  | CI q 0/59 busy 0/1 3/3 | SC q 0/0 busy 0/1 2/2 | gate 12
+
+--- passenger timeline (times in minutes since d1 00:00) ---
+ pax type       cabin    bags flight    lead    arrive  ci_start      S1    ci_end  sc_start      S2    sc_end     board  status
+ 191 provincial coach       0      1  84.347   275.653   350.683   5.603   356.286   356.286   3.931   360.217         -  left (missed)
+ 193 provincial coach       1      1  80.733   279.267   353.878  12.422   366.300   366.300   2.440   368.741         -  left (missed)
+ 197 provincial coach       1      1  76.455   283.545   366.300   3.067   369.368   369.368   2.130   371.498         -  left (missed)
+ 198 provincial coach       1      1  75.442   284.558   367.800   3.584   371.384   373.530   5.039   378.569         -  left (missed)
+ 201 provincial coach       0      1  73.487   286.513   370.704   3.241   373.944   377.064   1.248   378.312         -  left (missed)
+ 204 provincial coach       0      1  71.936   288.064   375.574   1.751   377.325   378.448   6.736   385.184         -  left (missed)
+ 205 provincial business    1      1  71.119   288.881   288.881   3.501   292.382   292.382   4.966   297.348   360.000  boarded
+ 208 provincial coach       1      1  68.578   291.422   384.085   8.584   392.669   398.743   0.568   399.311         -  left (missed)
+ 215 provincial coach       0      1  61.705   298.295   396.730   9.865   406.595   409.489   2.175   411.664         -  left (missed)
+ 442 provincial coach       0      2  90.051   629.949   799.246   0.874   800.120   810.688   2.174   812.862         -  left (missed, refunded)
