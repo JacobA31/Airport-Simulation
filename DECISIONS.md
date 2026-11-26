@@ -10,6 +10,7 @@ alternative interpretation is selectable in the config file without code changes
 | D1–D15 | 2026-10-22 | Person A |
 | D16–D22 | 2026-10-22 | Person A (conceptual-model review) |
 | D23–D25 | 2026-11-20 | Person A (Phase IV set-up) |
+| D4 revised (p = 0.1) | 2026-11-26 | Person A (no TA answer) |
 
 ---
 
@@ -27,9 +28,9 @@ alternative interpretation is selectable in the config file without code changes
 - **Chosen:** Local `.venv` (git-ignored) with numpy, PyYAML, pytest. SciPy is not required (`statistics.NormalDist` provides the inverse normal CDF). Work is committed step by step on branch `model-core`; nothing is pushed without the team's go-ahead.
 
 ### D4 — "Other problems/delays" check-in component **[config flag]**
-- **Options:** (A) applies to every passenger; (B) applies with probability *p*.
-- **Chosen:** A — `inputs.checkin.other_delay_prob: 1.0`.
-- **Rationale:** The spec gives no probability, so applying it to everyone is the only literal reading. Consequence noted: with this reading the coach check-in counters are overloaded at baseline (offered load ≈ 1.8× capacity, back-of-envelope). Candidate question for the TA.
+- **Options:** (A) applies to every passenger (p = 1); (B) applies to a small share of passengers (p ≈ 0.1); (C) applies to a moderate share (p = 0.25–0.5), with check-in counters as the decision area instead of D23.
+- **Chosen (revised 2026-11-26):** B — `inputs.checkin.other_delay_prob: 0.1`. Until 2026-11-26 the baseline used A (p = 1.0); see "D4 resolution" at the end of this log.
+- **Rationale:** The spec says "other *problems*/delays", which reads as an exception that affects some passengers, not a step every passenger goes through. The spec gives no probability, so 0.1 (1 passenger in 10) is our assumption and is tested in a sensitivity analysis.
 
 ### D5 — Commuters with zero bags still use check-in **[config flag]**
 - **Options:** (A) every passenger goes through check-in; (B) zero-bag commuters go straight to security.
@@ -211,7 +212,7 @@ Observations:
 - **Options:** (A) number/allocation of security lanes; (B) number/allocation of check-in counters; (C) check-in counters and security lanes together.
 - **Chosen:** A. The exact alternatives (for example 1B+3C, 1B+4C, and 1B+3C with server sharing) are fixed once D4 is settled.
 - **Rationale:** Coach security has offered load 1.5 at baseline under every D4 reading, so it is a structural bottleneck (see the 2026-11-20 exploration above). Check-in is the bottleneck only under the literal D4 reading, and changing both stations at once would leave the study without one primary decision area (spec §8.2).
-- **Status:** No alternatives are built or run until the TA answers D4.
+- **Status:** Unblocked on 2026-11-26 by the D4 resolution (p = 0.1). The exact alternatives are still to be chosen.
 
 ### D24 — Alternatives are overlay config files
 - **Options:** (A) overlay files with `extends:` that list only the changed keys; (B) full copies of `baseline.yaml`; (C) no files, `--set` overrides in a script.
@@ -225,3 +226,59 @@ Observations:
 
 ### D4 status
 - Waiting for the TA's answer (2026-11-20). Phase IV alternatives are on hold until then.
+
+---
+
+## D4 resolution (2026-11-26)
+
+Decided by Person A without a TA answer. Baseline `inputs.checkin.other_delay_prob`
+changes from 1.0 to **0.1** (D4 option B).
+
+**Why 0.1.** "Other problems/delays" reads as an exception, not a step every
+passenger goes through, and the spec gives no probability. The value is our
+assumption. It is reported as one, and the conclusions are tested at other values.
+
+**Where the result changes.** Each passenger's mean check-in time includes 3p
+minutes of other delay. With 3 coach counters, coach check-in offered load is
+
+  (40 × (2.35 + 3p) + 119/6 × (2.90 + 3p)) / 180 = 0.84 + 1.00 p,
+
+which reaches 1 at **p ≈ 0.16**. Coach security load is 1.50 for every p.
+
+| p | Coach check-in load | Bottleneck at baseline |
+|---|---|---|
+| 0 | 0.84 | coach security |
+| **0.1** | **0.94** | **coach security** |
+| 0.16 | 1.00 | both stations overloaded |
+| 0.25 | 1.09 | coach check-in; extra security lanes barely change misses |
+| 1 | 1.84 | coach check-in |
+
+**Exploration (5 replications per row, 3 coach counters; not reported results):**
+
+| p | Coach lanes 2 → 3 → 4: % provincial missed | Coach security wait (min) | Commuters left behind |
+|---|---|---|---|
+| 0.1 | 84 → 69 → 40 | 1 652 → 66 → 2 | 444 → 5 289 → 5 776 |
+| 0.25 | 85 → 84 → 84 | 1 319 → 9 → 1 | 438 → 3 398 → 3 573 |
+| 0.5 | 87 → 87 → 87 | 558 → 2 → 0.3 | 438 → 1 517 → 1 520 |
+
+**New baseline (10 replications, p = 0.1, mean ± 95% half-width):** coach security
+wait 1 632 ± 54 min, coach security utilization 0.998, % provincial missed
+83.9 ± 0.5, coach check-in wait 53 ± 2 min, profit $2 764 440 ± $11 778.
+
+**Consequences:**
+1. **D23 holds.** Coach security is the baseline bottleneck, so the security-lane
+   study is meaningful, and the principal KPIs (coach security wait and
+   utilization) now track that bottleneck (2026-11-20 exploration, observation 5).
+2. **The recommendation depends on p < 0.16.** Above that, check-in limits
+   throughput and extra lanes do little. Phase IV re-runs the baseline and the
+   recommended policy at p = 0.05 and p = 0.2, and §12 and the limitations
+   section state this condition.
+3. **Every earlier result is p = 1.** `results/pilot.csv`, `alt_a.csv` and
+   `low.csv` were run with p = 1.0. The pilot has to be re-run, and N chosen
+   again (Person B), before the final experiments.
+4. **The saved verification traces stay at p = 1.** They check event logic, not
+   results, so their commands now pin `inputs.checkin.other_delay_prob=1.0` and
+   stay reproducible. With p = 1 the variate code draws no extra uniform, so the
+   saved traces are reproduced exactly.
+5. The 2026-10-22 open question 1 and the 2026-11-20 exploration above describe
+   the p = 1 baseline and are kept as history.

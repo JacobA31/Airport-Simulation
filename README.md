@@ -45,10 +45,12 @@ Windows, or activate the environment and use plain `python`.
 .venv/bin/python scripts/check_conservation.py results/*.csv   # conservation identities on saved runs
 
 # Event traces with per-passenger timelines (saved in docs/verification/)
-.venv/bin/python scripts/trace.py --until 31 --max-lines 60 --pax-table 12 --no-results
+.venv/bin/python scripts/trace.py --until 31 --max-lines 60 --pax-table 12 --no-results \
+    --set inputs.checkin.other_delay_prob=1.0
 .venv/bin/python scripts/trace.py --start 270 --until 412 --max-lines 100 --pax-table 10 \
     --pax-type provincial --no-results \
-    --set simulation.horizon_days=1 inputs.provincial_demand.seats.business=2 inputs.provincial_demand.seats.coach=8
+    --set simulation.horizon_days=1 inputs.provincial_demand.seats.business=2 inputs.provincial_demand.seats.coach=8 \
+    inputs.checkin.other_delay_prob=1.0
 ```
 
 What each check shows is described in `docs/verification.md`.
@@ -168,4 +170,4 @@ Each run writes `<name>.csv` (one row per replication, with the seed record) and
 | `docs/des_diagram.md` | event graph and process-flow diagrams |
 | `docs/software_architecture.md` | report §6: modules and design |
 | `docs/verification.md`, `docs/verification/` | report §7: verification evidence and saved event traces |
-| `DECISIONS.md` | log of modelling decisions (D1–D22) |
+| `DECISIONS.md` | log of modelling decisions (D1–D25) |

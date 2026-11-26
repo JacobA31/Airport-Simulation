@@ -1,5 +1,5 @@
-# python scripts/trace.py --until 31 --max-lines 60 --pax-table 12 --no-results
-# Baseline config, replication 0. After '|': check-in (CI) and security (SC) state as
+# python scripts/trace.py --until 31 --max-lines 60 --pax-table 12 --no-results --set inputs.checkin.other_delay_prob=1.0
+# Baseline config with the pre-2026-11-26 D4 setting (other delay for every passenger), replication 0. After '|': check-in (CI) and security (SC) state as
 # 'q <business waiting>/<coach waiting> busy <business busy>/<cap> <coach busy>/<cap>', then commuters at the gate.
 
 d1 00:01:23.0  t=    1.384  COMMUTER_ARRIVAL     pax 1 commuter bags=0 -> checkin_service         | CI q 0/0 busy 0/1 1/3 | SC q 0/0 busy 0/1 0/2 | gate 0

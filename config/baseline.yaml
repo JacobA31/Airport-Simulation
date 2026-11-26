@@ -62,5 +62,5 @@ inputs:                        # stochastic input models (Person B, report secti
     boarding_pass_mean_min: 2
     per_bag_mean_min: 1
     other_delay_mean_min: 3
-    other_delay_prob: 1.0      # D4: applies to every passenger
+    other_delay_prob: 0.1      # D4: 1 passenger in 10 has an "other problem" (resolved 2026-11-26)
   security_mean_min: 3

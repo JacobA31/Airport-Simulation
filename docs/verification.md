@@ -22,6 +22,12 @@ lengths and busy servers at check-in and security, and commuters at the gate).
 `--pax-table N` adds each passenger's timeline (arrival, service start and end
 times, service times S1 and S2, boarding time and final status).
 
+Both traces were made with the "other delay" check-in component applied to every
+passenger (`inputs.checkin.other_delay_prob=1.0`), the D4 setting before
+2026-11-26. The baseline now uses 0.1 (DECISIONS.md, "D4 resolution"). The traces
+check event logic, which does not depend on this value, so their commands pin 1.0
+and reproduce the saved files exactly.
+
 **Trace 1: the first 12 commuters (baseline, replication 0, t ≤ 31 min).**
 File: [`verification/trace_commuters.txt`](verification/trace_commuters.txt).
 Hand checks against the timeline:
@@ -50,7 +56,7 @@ commuter traffic still creates realistic queues. Hand checks:
 | Refund rule (lead ≥ 90 min) | Pax 442 (flight 2) arrived 90.051 min early, missed the flight, and is `refunded`. Pax 191 (lead 84.3) missed without a refund |
 | Separate random streams | Rerunning with `inputs.commuter_arrival_rate_per_hour=0` gives the same ten lead times (only provincial passengers draw from the lead-time stream), and then all ten catch the flight. Bags and service times differ because commuters also draw from those streams. Under a policy change the arrival sequence is unchanged, so every passenger keeps the same draws |
 
-Trace 2 also shows the baseline's main service problem. With only commuters in
+Trace 2 also shows the main service problem of the p = 1 setting. With only commuters in
 the building, 36 coach passengers are already waiting at check-in by 04:35, so
 provincial coach passengers queue for about 75 minutes before check-in starts.
 
