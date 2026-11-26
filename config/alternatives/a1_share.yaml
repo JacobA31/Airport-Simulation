@@ -1,0 +1,7 @@
+# Alternative A1: 1 business + 2 coach security lanes, lanes shared (D26).
+# Same lanes as the baseline. Coach passengers may use the business lane when it
+# is idle (and business passengers an idle coach lane); each lane serves its own
+# queue first (D20). Tests reallocating existing resources.
+extends: ../baseline.yaml
+operations:
+  security_cross_use: both

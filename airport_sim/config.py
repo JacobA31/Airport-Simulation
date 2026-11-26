@@ -24,13 +24,49 @@ class ConfigError(ValueError):
 
 
 def load_config(path: str | Path, overrides: dict | None = None) -> dict:
-    """Read a YAML config, apply dotted-key overrides, validate, and return it."""
-    with open(path, encoding="utf-8") as fh:
-        cfg = yaml.safe_load(fh)
+    """Read a YAML config, apply dotted-key overrides, validate, and return it.
+
+    A config file may start with ``extends: <path>`` (relative to that file).
+    The base file is loaded first and the file's other keys replace the base
+    values (D24). This is how each policy alternative in ``config/alternatives/``
+    states only what differs from the baseline.
+    """
+    cfg = _read_config(Path(path), seen=())
     if overrides:
         cfg = apply_overrides(cfg, overrides)
     validate_config(cfg)
     return cfg
+
+
+def _read_config(path: Path, seen: tuple) -> dict:
+    resolved = path.resolve()
+    if resolved in seen:
+        raise ConfigError(f"circular 'extends' chain: {' -> '.join(map(str, (*seen, resolved)))}")
+    with open(path, encoding="utf-8") as fh:
+        cfg = yaml.safe_load(fh) or {}
+    base_name = cfg.pop("extends", None)
+    if base_name is None:
+        return cfg
+    base = _read_config(path.parent / base_name, (*seen, resolved))
+    return _merge(base, cfg, where=str(path))
+
+
+def _merge(base: dict, overlay: dict, where: str, prefix: str = "") -> dict:
+    """Deep copy of ``base`` with ``overlay``'s values put in place.
+
+    Like ``apply_overrides``, only keys that already exist in the base may be
+    set, so a typo in an alternative raises instead of being silently ignored.
+    """
+    out = copy.deepcopy(base)
+    for key, value in overlay.items():
+        dotted = f"{prefix}{key}"
+        if key not in out:
+            raise ConfigError(f"{where}: unknown config key: {dotted}")
+        if isinstance(value, dict) and isinstance(out[key], dict):
+            out[key] = _merge(out[key], value, where, prefix=f"{dotted}.")
+        else:
+            out[key] = copy.deepcopy(value)
+    return out
 
 
 def apply_overrides(cfg: dict, overrides: dict) -> dict:
@@ -119,6 +155,7 @@ def validate_config(cfg: dict) -> None:
     _get(cfg, "flights.provincial.refund_min_lead_min")
 
     _require(_get(cfg, "finance.checkin_wage_per_hour") >= 0, "finance.checkin_wage_per_hour must be >= 0")
+    _require(_get(cfg, "finance.security_wage_per_hour") >= 0, "finance.security_wage_per_hour must be >= 0")
     _get(cfg, "finance.staffing_ratio_limit")
 
     # Inputs the model's event logic depends on (Person B may add stricter checks).

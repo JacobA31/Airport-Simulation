@@ -1,0 +1,7 @@
+# Side check (not one of the three alternatives): 1 business + 4 coach security
+# lanes, strict dedication (D26). Used to show that A3 performs about as well as
+# a fourth coach lane.
+extends: ../baseline.yaml
+operations:
+  security_lanes:
+    coach: 4

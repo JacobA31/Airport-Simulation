@@ -1,0 +1,6 @@
+# Alternative A2: 1 business + 3 coach security lanes, strict dedication (D26).
+# One more coach lane than the baseline. Tests adding a resource.
+extends: ../baseline.yaml
+operations:
+  security_lanes:
+    coach: 3
