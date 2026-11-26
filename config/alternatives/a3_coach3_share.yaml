@@ -1,0 +1,8 @@
+# Alternative A3: 1 business + 3 coach security lanes, lanes shared (D26).
+# A2 plus the sharing rule of A1. Together with the baseline, A1 and A2 this
+# completes the 2 x 2 design: coach lanes {2, 3} x sharing {off, on}.
+extends: ../baseline.yaml
+operations:
+  security_lanes:
+    coach: 3
+  security_cross_use: both

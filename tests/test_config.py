@@ -66,3 +66,25 @@ def test_security_wage_reduces_profit_but_not_the_checkin_ratio():
     assert paid["staffing_ratio"] == free["staffing_ratio"]
     assert {k: v for k, v in paid.items() if k not in ("profit", "security_staffing_cost")} == \
            {k: v for k, v in free.items() if k not in ("profit", "security_staffing_cost")}
+
+
+ALTERNATIVES = {
+    # file in config/alternatives/ -> (coach security lanes, security_cross_use)   (D26)
+    "a1_share.yaml": (2, "both"),
+    "a2_coach3.yaml": (3, "none"),
+    "a3_coach3_share.yaml": (3, "both"),
+    "check_coach4.yaml": (4, "none"),
+}
+
+
+@pytest.mark.parametrize("name", sorted(ALTERNATIVES))
+def test_alternative_files_change_only_security_resources(name):
+    alt_dir = BASE.parent / "alternatives"
+    lanes, sharing = ALTERNATIVES[name]
+    expected = baseline_cfg(operations__security_lanes__coach=lanes, operations__security_cross_use=sharing)
+    assert load_config(alt_dir / name) == expected
+
+
+def test_every_alternative_file_is_listed():
+    alt_dir = BASE.parent / "alternatives"
+    assert {p.name for p in alt_dir.glob("*.yaml")} == set(ALTERNATIVES)

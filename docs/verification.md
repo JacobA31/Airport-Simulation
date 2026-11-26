@@ -123,6 +123,8 @@ Besides the checks above, the test suite (`.venv/bin/pytest -q`) covers:
 | `test_finance_identities`, `test_refund_rule` (smoke) | Every financial output equals its hand formula (D13) |
 | `test_same_seed_reproduces_and_replications_differ` (smoke) | Same seed → identical output; different replication → different output |
 | `test_common_random_numbers_across_policies` (verification) | Under more capacity, server sharing, or `leave_at_departure`, every passenger has the same arrival time, bags, service times and lead time as at baseline. This is what makes paired comparisons of alternatives valid |
+| `test_sharing_rule_own_pool_first_then_the_other`, `test_no_sharing_without_the_flag` (verification) | Hand-checked lane sharing (D20), which alternatives A1 and A3 use: a passenger takes an idle lane of their own class first and only then an idle lane of the other class; a freed lane serves its own queue first, FIFO; nothing is shared under strict dedication |
+| `test_alternative_files_change_only_security_resources` (config) | Each file in `config/alternatives/` equals the baseline except for the coach lane count and the sharing flag (D26), so the comparison varies only the decision area |
 | `test_rng.py`, `test_variates.py` (Person B) | Streams are reproducible and independent; each variate matches its theoretical mean |
 
 Structured code review: each event routine in `model.py` was compared line by

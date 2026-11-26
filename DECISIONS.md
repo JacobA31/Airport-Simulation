@@ -11,6 +11,7 @@ alternative interpretation is selectable in the config file without code changes
 | D16–D22 | 2026-10-22 | Person A (conceptual-model review) |
 | D23–D25 | 2026-11-20 | Person A (Phase IV set-up) |
 | D4 revised (p = 0.1) | 2026-11-26 | Person A (no TA answer) |
+| D26–D27 | 2026-11-26 | Person A (Phase IV alternatives) |
 
 ---
 
@@ -282,3 +283,58 @@ wait 1 632 ± 54 min, coach security utilization 0.998, % provincial missed
    saved traces are reproduced exactly.
 5. The 2026-10-22 open question 1 and the 2026-11-20 exploration above describe
    the p = 1 baseline and are kept as history.
+
+---
+
+## Phase IV alternatives (2026-11-26)
+
+### D26 — Alternatives: a 2 × 2 design over coach lanes and lane sharing
+- **Options:** (A) coach lanes {2, 3} × sharing {off, on}: three alternatives plus the baseline; (B) lane count only (1B+3C, 1B+4C); (C) sharing only.
+- **Chosen:** A. Overlay files in `config/alternatives/` (D24):
+
+  | File | Business + coach lanes | `security_cross_use` | What it tests |
+  |---|---|---|---|
+  | (baseline) | 1 + 2 | `none` | — |
+  | `a1_share.yaml` | 1 + 2 | `both` | reallocating existing lanes |
+  | `a2_coach3.yaml` | 1 + 3 | `none` | adding one coach lane |
+  | `a3_coach3_share.yaml` | 1 + 3 | `both` | adding a lane and sharing |
+  | `check_coach4.yaml` | 1 + 4 | `none` | side check, not an alternative: does A3 match a fourth lane? |
+
+- **Rationale:** The design separates the effect of reallocating lanes (sharing) from the effect of adding one, as spec §8.2 asks ("investigate it systematically"). B gives the obvious "more lanes is better" answer when lanes are free. C alone leaves about 83% of provincial passengers missing their flights.
+- `tests/test_config.py` checks that each file loads and differs from the baseline only in these two settings.
+
+### D27 — Security wage stays 0; report break-even wages instead
+- **Options:** (a) keep `finance.security_wage_per_hour: 0` and report, in §12, the wage at which each extra lane stops paying for itself; (b) assume $35/h, like check-in; (c) 0 in the main runs plus a $35/h side check.
+- **Chosen:** a. The spec gives no security wage, so the comparison makes up no number. The break-even wage is (profit gain of the extra lane) ÷ 168 h. D25's flag remains available.
+
+### Test run (10 replications, p = 0.1; not reported results; final runs use B's N)
+
+Mean ± 95% half-width. Differences are paired by replication (common random numbers).
+
+| | Coach security wait (min) | % provincial missed | Coach lane utilization | Profit | Commuters left behind |
+|---|---|---|---|---|---|
+| Baseline 1+2 | 1 632 ± 54 | 83.9 ± 0.5 | 1.00 | $2 764 440 ± 11 778 | 432 ± 49 |
+| A1 1+2 shared | 435 ± 53 | 83.5 ± 0.7 | 0.99 | $3 085 570 ± 9 432 | 3 248 ± 125 |
+| A2 1+3 | 66 ± 20 | 68.2 ± 6.9 | 0.98 | $3 195 430 ± 13 775 | 5 255 ± 346 |
+| A3 1+3 shared | 2.8 ± 0.3 | 40.9 ± 1.0 | 0.83 | $3 211 830 ± 14 570 | 5 704 ± 354 |
+| Check 1+4 | 1.7 ± 0.2 | 39.8 ± 1.1 | 0.74 | $3 211 890 ± 14 586 | 5 711 ± 353 |
+
+Observations:
+1. **Sharing is worth almost a full lane.** Check 1+4 minus A3: wait −1.1 ± 0.2 min, missed −1.1 ± 0.5 points, profit +$60 ± $97 (not significant). The business lane is idle about 75% of the time at baseline, and A3 uses that idle time.
+2. **Break-even wages (D27):** A2 over baseline gains about $431k a week, so about $2 565/h for one lane. A3 over baseline gains about $447k, or about $2 663/h. The fourth lane (check 1+4 over A3) gains nothing significant, so it does not pay at any wage.
+3. **Most of the profit gain is commuter revenue.** At baseline thousands of commuters are still in the security queue at T and pay nothing (D13). Refunds change by at most about $29k.
+4. **Missed flights level off at about 40%.** With ample security capacity, the remaining misses come from the provincial arrival surge at coach check-in, which is outside this decision area (§12, limitations).
+5. **The commuter gate becomes the bottleneck** (40 seats/h for 40 commuters/h). Commuters left behind rise from about 430 to about 5 700 — this is the main operational trade-off for §12.
+
+### Phase IV tooling and drafts (2026-11-26)
+- `scripts/run_phase4.py --reps N` runs A1–A3, the 1+4 check, and the D4
+  robustness runs. The robustness runs cover the baseline and **all three
+  alternatives** at p = 0.05 and 0.2, not only the recommended policy (D4
+  resolution, consequence 2), so the check does not presuppose the recommendation.
+- `scripts/compare_alternatives.py` writes `results/phase4_tables.md`. It refuses
+  to compare runs whose replication numbers or base_seed differ.
+- Drafts of §10 (`docs/alternatives.md`) and §12–13
+  (`docs/tradeoffs_recommendation.md`) use the 10-replication test run. They
+  propose A3 as the recommendation; the team has not confirmed it yet.
+- `tests/test_verification.py` now checks the D20 sharing rule by hand (own pool
+  first, then the other; nothing shared under `none`), because A1 and A3 depend on it.

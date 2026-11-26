@@ -33,6 +33,8 @@ dictionary returned to the replication runner.*
 | `scripts/run_once.py` | Runs one replication and prints the KPI dictionary. | — |
 | `scripts/trace.py` | Prints an event trace (clock, event, passenger, station and gate state after the event) for a time window, and optionally each passenger's timeline (`--pax-table N`) for hand checking. | — |
 | `scripts/check_conservation.py` | Checks the conservation identities on every row of saved replication CSVs. | — |
+| `scripts/run_phase4.py` | Runs the security-lane alternatives and the D4 robustness runs with N replications each, through `runner`. | — |
+| `scripts/compare_alternatives.py` | Builds the §10 and §12 tables (means, CIs, paired differences, break-even wages) from the saved CSVs, using `analysis`. | — |
 | `tests/` | pytest suite. Runs every flag combination and several baseline replications with queue/resource invariants checked after each event and passenger conservation checked at the end. Also covers reproducibility, common random numbers across policies, finance identities, the refund rule, deterministic tests of the tie rule, gate capacity and FIFO order, zero arrivals, and each random-variate generator against its theoretical mean. | `helpers.checked_run`, `helpers.FixedVariates` |
 
 ## 6.2 How one replication runs

@@ -54,3 +54,51 @@ def test_checker_flags_security_without_checkin():
     broken = {**row, "security_completed": row["checkin_completed"] + 1}
     assert conservation_violations(broken) != []
     assert conservation_violations(broken, all_use_checkin=False) == []
+
+
+# ------------------------------------------------ server-sharing rule (D20), used by A1 and A3
+class _Pax:
+    def __init__(self, cabin):
+        self.cabin = cabin
+
+
+def _security(cross_use):
+    from airport_sim.stations import Station
+    return Station("security", {"business": 1, "coach": 2}, cross_use)
+
+
+def test_sharing_rule_own_pool_first_then_the_other():
+    """D20 under 'both': a passenger tries their own pool first; a freed server takes its own queue first."""
+    s = _security("both")
+    assert s.idle_pool_for("coach") == "coach"           # own pool idle -> own pool
+    s.start("coach", 0.0, "coach", 0.0)
+    s.start("coach", 0.0, "coach", 0.0)
+    assert s.idle_pool_for("coach") == "business"        # coach lanes full -> idle business lane
+    s.start("business", 0.0, "coach", 0.0)
+    assert s.cross_served == 1 and s.idle_pool_for("business") is None
+
+    b, c1, c2 = _Pax("business"), _Pax("coach"), _Pax("coach")
+    for p in (c1, b, c2):                                # coach c1 joins before business b
+        s.enqueue(p, 1.0)
+    s.release("business", 2.0)
+    assert s.next_for("business", 2.0) is b              # business lane takes its own queue first
+    s.start("business", 2.0, "business", 1.0)
+    s.release("coach", 3.0)
+    assert s.next_for("coach", 3.0) is c1                # coach lane: own queue, FIFO
+    s.start("coach", 3.0, "coach", 2.0)
+    s.release("business", 4.0)
+    assert s.next_for("business", 4.0) is c2             # business queue empty -> takes coach
+    s.start("business", 4.0, "coach", 3.0)
+    assert s.cross_served == 2
+    assert s.next_for("coach", 4.0) is None              # both queues empty
+
+
+def test_no_sharing_without_the_flag():
+    """Baseline (D7): a coach passenger never uses the idle business lane, and vice versa."""
+    s = _security("none")
+    s.start("coach", 0.0, "coach", 0.0)
+    s.start("coach", 0.0, "coach", 0.0)
+    assert s.idle_pool_for("coach") is None              # business lane idle, but not eligible
+    s.enqueue(_Pax("coach"), 1.0)
+    assert s.next_for("business", 1.0) is None
+    assert s.idle_pool_for("business") == "business"

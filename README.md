@@ -135,8 +135,10 @@ confidence-interval half-width criterion, and the same for every experiment).
 # 2. Baseline with N replications
 .venv/bin/python -m airport_sim.runner --reps N --out results/baseline.csv
 
-# 3. Each alternative (same N, same base_seed), e.g.
-.venv/bin/python -m airport_sim.runner --reps N --set operations.checkin_counters.coach=4 --out results/alt_a.csv
+# 3. Each alternative (same N, same base_seed; see DECISIONS.md D26) and the D4
+#    robustness runs (other_delay_prob 0.05 and 0.2), then the §10/§12 tables
+.venv/bin/python scripts/run_phase4.py --reps N        # -> results/<alternative>.csv, results/robust_*.csv
+.venv/bin/python scripts/compare_alternatives.py       # -> results/phase4_tables.md
 
 # 4. Sensitivity: low / baseline / high commuter arrival rate, for the baseline and
 #    the recommended policy (add the policy's --set overrides to the same commands)
@@ -155,13 +157,14 @@ Each run writes `<name>.csv` (one row per replication, with the seed record) and
 | Path | Contents |
 |---|---|
 | `config/baseline.yaml` | every model parameter (time in minutes, money in CAD) |
+| `config/alternatives/` | policy alternatives as overlay files on the baseline (D24, D26) |
 | `airport_sim/` | the simulator (see `docs/software_architecture.md`) |
 | `airport_sim/rng.py` | independent, reproducible random-number streams per replication |
 | `airport_sim/variates.py` | random-variate generators for all stochastic inputs |
 | `airport_sim/runner.py` | runs N replications and saves the replication-level CSV |
 | `airport_sim/analysis.py` | means, t-based 95% CIs, half-widths, replication-count planning, paired differences |
 | `airport_sim/checks.py` | passenger-conservation identities on one replication's output |
-| `scripts/` | single-run, event-trace, and conservation-check scripts |
+| `scripts/` | single-run, event-trace, conservation-check, Phase IV run (`run_phase4.py`) and comparison-table (`compare_alternatives.py`) scripts |
 | `tests/` | pytest suite (random streams, variates against theoretical means, model, verification) |
 | `results/` | replication-level CSVs, summaries, and the config record for each run |
 | `docs/objectives.md`, `docs/scope.md`, `docs/principal_kpis.md`, `docs/assumptions_log.md` | report §1–3: objectives, scope, KPIs, assumptions log |
@@ -170,4 +173,6 @@ Each run writes `<name>.csv` (one row per replication, with the seed record) and
 | `docs/des_diagram.md` | event graph and process-flow diagrams |
 | `docs/software_architecture.md` | report §6: modules and design |
 | `docs/verification.md`, `docs/verification/` | report §7: verification evidence and saved event traces |
-| `DECISIONS.md` | log of modelling decisions (D1–D25) |
+| `docs/alternatives.md` | report §10: alternative-policy experiments and comparison |
+| `docs/tradeoffs_recommendation.md` | report §12–13: trade-offs and recommendation |
+| `DECISIONS.md` | log of modelling decisions (D1–D27) |
